@@ -5,8 +5,8 @@ class Platformer extends Phaser.Scene {
 
     init() {
         // variables and settings
-        this.ACCELERATION = 300;
-        this.DRAG = 500;    // DRAG < ACCELERATION = icy slide
+        this.ACCELERATION = 200;
+        this.DRAG = 600;    // DRAG < ACCELERATION = icy slide
         this.physics.world.gravity.y = 1500;
         this.JUMP_VELOCITY = -600;
         this.PARTICLE_VELOCITY = 50;
@@ -97,7 +97,7 @@ class Platformer extends Phaser.Scene {
         if(cursors.left.isDown) {
             my.sprite.player.setAccelerationX(-this.ACCELERATION);
             my.sprite.player.setFlip(true, false);
-            //my.sprite.player.anims.play('walk', true);
+            my.sprite.player.anims.play('walk', true);
 
             //particle following code
             //my.vfx.walking.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);
@@ -112,7 +112,7 @@ class Platformer extends Phaser.Scene {
         } else if(cursors.right.isDown) {
             my.sprite.player.setAccelerationX(this.ACCELERATION);
             my.sprite.player.resetFlip();
-            //my.sprite.player.anims.play('walk', true);
+            my.sprite.player.anims.play('walk', true);
             //my.vfx.walking.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);
 
             //my.vfx.walking.setParticleSpeed(this.PARTICLE_VELOCITY, 0);
@@ -127,16 +127,17 @@ class Platformer extends Phaser.Scene {
             // Set acceleration to 0 and have DRAG take over
             my.sprite.player.setAccelerationX(0);
             my.sprite.player.setDragX(this.DRAG);
-            //my.sprite.player.anims.play('idle');
+            my.sprite.player.anims.play('idle');
             //vfx stop playing 
             //my.vfx.walking.stop();
         }
 
         // player jump
         // note that we need body.blocked rather than body.touching b/c the former applies to tilemap tiles and the latter to the "ground"
-        //if(!my.sprite.player.body.blocked.down) {
-        //    my.sprite.player.anims.play('jump');
-        //}
+        if(!my.sprite.player.body.blocked.down) {
+            my.sprite.player.anims.play('jump');
+        }
+        
         if(my.sprite.player.body.blocked.down && Phaser.Input.Keyboard.JustDown(cursors.up)) {
             my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
         }

@@ -24,14 +24,6 @@ class Load extends Phaser.Scene {
         this.load.image("bunny", "tile_0045.png");
         this.load.image("bunny jump", "tile_0046.png");
 
-        //jumping animation
-        this.anims.create({
-            key: 'jump',
-            frames: [{ key: 'bunny jump' }],
-            frameRate: 10,
-            repeat: 0
-        });
-
         // Oooh, fancy. A multi atlas is a texture atlas which has the textures spread
         // across multiple png files, so as to keep their size small for use with
         // lower resource devices (like mobile phones).
@@ -42,6 +34,32 @@ class Load extends Phaser.Scene {
     }
 
     create() {
+
+        //jumping animation
+        this.anims.create({
+            key: 'jump',
+            frames: [{ key: 'bunny jump' }],
+            repeat: 0
+        });
+
+        //idle animation
+        this.anims.create({
+            key: 'idle',
+            frames: [{ key: 'bunny' }],
+            repeat: -1
+        });
+
+        //walking animation
+        this.anims.create({
+            key: 'walk',
+            frames: [
+                { key: 'bunny' },
+                { key: 'bunny jump' }
+            ],
+            frameRate: 5,
+            repeat: -1
+        });
+
          // ...and pass to the next Scene
          this.scene.start("platformerScene");
     }
