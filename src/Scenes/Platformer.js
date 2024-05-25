@@ -13,12 +13,16 @@ class Platformer extends Phaser.Scene {
         //come back and change scale later
         this.SCALE = 2;
         this.myScore = 0;
+        
     }
 
     create() {
+
+        this.physics.world.setBounds(0, 0, 1920, 800);
+
         // Create a new tilemap game object which uses 16x16 pixel tiles, and is
         // 60 tiles wide and 25 tiles tall.
-        this.map = this.add.tilemap("Azure Level", 16, 16, 50, 25);
+        this.map = this.add.tilemap("Azure Level", 16, 16, 60, 25);
 
         // Add a tileset to the map
         // First parameter: name we gave the tileset in Tiled
@@ -31,12 +35,10 @@ class Platformer extends Phaser.Scene {
         this.groundLayer = this.map.createLayer("Platform and Trees", this.tileset, 0, 0);
         this.groundLayer.setScale(SCALE);
 
-
         // Make it collidable
         this.groundLayer.setCollisionByProperty({
             collides: true
         });
-
 
 
         // Find coins in the "Objects" layer in Phaser
@@ -45,31 +47,59 @@ class Platformer extends Phaser.Scene {
         // Phaser docs:
         // https://newdocs.phaser.io/docs/3.80.0/focus/Phaser.Tilemaps.Tilemap-createFromObjects
 
-        //this.coins = this.map.createFromObjects("Objects", {
-        //    name: "coin",
-        //    key: "tilemap_sheet",
-        //    frame: 151
-        //});
+        this.flowers = this.map.createFromObjects("Objects", {
+            name: "flower",
+            key: "flower"
+            //frame: 33
+        });
         
+        //scaling flowers up :) and multiplying the coords because the other layers are also scaled up
+        this.flowers.forEach((flower) => {
+            flower.setScale(SCALE, SCALE); 
+
+            flower.x *= 2;
+            flower.y *= 2;
+        });
+
+        //ladder objects
+        this.ladders = this.map.createFromObjects("Objects", {
+            name: "ladder",
+            key: "ladder"
+        });
+
+        this.ladders.forEach((ladder) => {
+            ladder.setScale(SCALE, SCALE); 
+
+            ladder.x *= 2;
+            ladder.y *= 2;
+        });
+            
         // Since createFromObjects returns an array of regular Sprites, we need to convert 
         // them into Arcade Physics sprites (STATIC_BODY, so they don't move) 
-        //this.physics.world.enable(this.coins, Phaser.Physics.Arcade.STATIC_BODY);
+        this.physics.world.enable(this.flowers, Phaser.Physics.Arcade.STATIC_BODY);
+        this.physics.world.enable(this.ladders, Phaser.Physics.Arcade.STATIC_BODY);
 
         // Create a Phaser group out of the array this.coins
         // This will be used for collision detection below.
-        //this.coinGroup = this.add.group(this.coins);
+        this.flowerGroup = this.add.group(this.flowers);
+        this.ladderGroup = this.add.group(this.ladders);
         
         // set up player avatar
         my.sprite.player = this.physics.add.sprite(30, 600, "bunny").setScale(SCALE);
         my.sprite.player.setCollideWorldBounds(true);
 
-        // Enable collision handling
+        //enable collision handling
         this.physics.add.collider(my.sprite.player, this.groundLayer);
 
-        // Handle collision detection with coins
-        this.physics.add.overlap(my.sprite.player, this.coinGroup, (obj1, obj2) => {
-            obj2.destroy(); // remove coin on overlap
+        //handle collision detection with flowers
+        this.physics.add.overlap(my.sprite.player, this.flowerGroup, (obj1, obj2) => {
+            obj2.destroy();
         });
+
+        //collision detection with ladder
+        this.physics.add.overlap(my.sprite.player, this.ladderGroup, (obj1, obj2) => {
+            this.title.visible = true;
+        }); 
         
         // set up Phaser-provided cursor key input
         cursors = this.input.keyboard.createCursorKeys();
@@ -86,8 +116,7 @@ class Platformer extends Phaser.Scene {
         my.vfx.walking = this.add.particles(0,-8, "particles 2", {
             quantity: 1,
             scale: {start: 1.5, end: 1.5},
-            // TODO: Try: 
-            //maxAliveParticles: 8,
+            maxAliveParticles: 4,
             lifespan: 100,
             alpha: {start: 0.5, end: 0.01}, 
         });
@@ -95,16 +124,26 @@ class Platformer extends Phaser.Scene {
         my.vfx.walking.stop();
 
         //camera
-        this.cameras.main.setBounds(0, 0, 1440, 800);
+        this.cameras.main.setBounds(0, 0, 1920, 800);
         this.cameras.main.startFollow(my.sprite.player, true, 0.25, 0.25); // (target, [,roundPixels][,lerpX][,lerpY])
         this.cameras.main.setDeadzone(20, 20);
         this.cameras.main.setZoom(this.SCALE);
+
+        // Create the title image
+        this.title = this.add.image(450, 600, 'title');
+        this.title.setScale(SCALE); 
+        this.title.visible = false;
     
     } 
 
     update() {
 
+        if (this.scene.isPaused()) {
+            return;
+        }
+
         if(cursors.left.isDown) {
+            this.title.visible = false;
             my.sprite.player.setAccelerationX(-this.ACCELERATION);
             my.sprite.player.setFlip(true, false);
             my.sprite.player.anims.play('walk', true);
@@ -121,6 +160,7 @@ class Platformer extends Phaser.Scene {
             }
 
         } else if(cursors.right.isDown) {
+            this.title.visible = false;
             my.sprite.player.setAccelerationX(this.ACCELERATION);
             my.sprite.player.resetFlip();
             my.sprite.player.anims.play('walk', true);
@@ -153,6 +193,7 @@ class Platformer extends Phaser.Scene {
             my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
         }
 
+        //reset key
         if(Phaser.Input.Keyboard.JustDown(this.rKey)) {
             this.scene.restart();
         }
