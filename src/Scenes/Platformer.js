@@ -18,7 +18,7 @@ class Platformer extends Phaser.Scene {
     create() {
         // Create a new tilemap game object which uses 16x16 pixel tiles, and is
         // 60 tiles wide and 25 tiles tall.
-        this.map = this.add.tilemap("Azure Level", 16, 16, 45, 25);
+        this.map = this.add.tilemap("Azure Level", 16, 16, 50, 25);
 
         // Add a tileset to the map
         // First parameter: name we gave the tileset in Tiled
@@ -60,14 +60,13 @@ class Platformer extends Phaser.Scene {
         //this.coinGroup = this.add.group(this.coins);
         
         // set up player avatar
-        //my.sprite.player = this.physics.add.sprite(game.config.width/4, game.config.height/2, "bunny", "tile_0045.png").setScale(SCALE)
-        my.sprite.player = this.physics.add.sprite(30, 345, "bunny", "tile_0045.png").setScale(SCALE);
+        my.sprite.player = this.physics.add.sprite(30, 600, "bunny").setScale(SCALE);
         my.sprite.player.setCollideWorldBounds(true);
 
         // Enable collision handling
         this.physics.add.collider(my.sprite.player, this.groundLayer);
 
-        // Handle collision detection with coins (and SCORE, EXTRA CREDIT)
+        // Handle collision detection with coins
         this.physics.add.overlap(my.sprite.player, this.coinGroup, (obj1, obj2) => {
             obj2.destroy(); // remove coin on overlap
         });
@@ -83,6 +82,17 @@ class Platformer extends Phaser.Scene {
             this.physics.world.debugGraphic.clear()
         }, this);
 
+        // movement vfx
+        my.vfx.walking = this.add.particles(0,-8, "particles 2", {
+            quantity: 1,
+            scale: {start: 1.5, end: 1.5},
+            // TODO: Try: 
+            //maxAliveParticles: 8,
+            lifespan: 100,
+            alpha: {start: 0.5, end: 0.01}, 
+        });
+
+        my.vfx.walking.stop();
 
         //camera
         this.cameras.main.setBounds(0, 0, 1440, 800);
@@ -100,26 +110,26 @@ class Platformer extends Phaser.Scene {
             my.sprite.player.anims.play('walk', true);
 
             //particle following code
-            //my.vfx.walking.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);
-            //my.vfx.walking.setParticleSpeed(this.PARTICLE_VELOCITY, 0);
+            my.vfx.walking.startFollow(my.sprite.player, my.sprite.player.displayWidth/2, my.sprite.player.displayHeight/2-5, false);
+
+            my.vfx.walking.setParticleSpeed(this.PARTICLE_VELOCITY, 0);
 
             // Only play smoke effect if touching the ground
-            //if (my.sprite.player.body.blocked.down) {
-            //    my.vfx.walking.start();
+            if (my.sprite.player.body.blocked.down) {
+                my.vfx.walking.start();
 
-            //}
+            }
 
         } else if(cursors.right.isDown) {
             my.sprite.player.setAccelerationX(this.ACCELERATION);
             my.sprite.player.resetFlip();
             my.sprite.player.anims.play('walk', true);
-            //my.vfx.walking.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);
-
-            //my.vfx.walking.setParticleSpeed(this.PARTICLE_VELOCITY, 0);
+            my.vfx.walking.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-40, my.sprite.player.displayHeight/2-5, false);
+            my.vfx.walking.setParticleSpeed(this.PARTICLE_VELOCITY, 0);
 
             // Only play smoke effect if touching the ground
             if (my.sprite.player.body.blocked.down) {
-            //    my.vfx.walking.start();
+                my.vfx.walking.start();
 
             }
 
@@ -129,13 +139,14 @@ class Platformer extends Phaser.Scene {
             my.sprite.player.setDragX(this.DRAG);
             my.sprite.player.anims.play('idle');
             //vfx stop playing 
-            //my.vfx.walking.stop();
+            my.vfx.walking.stop();
         }
 
         // player jump
         // note that we need body.blocked rather than body.touching b/c the former applies to tilemap tiles and the latter to the "ground"
         if(!my.sprite.player.body.blocked.down) {
             my.sprite.player.anims.play('jump');
+            my.vfx.walking.stop();
         }
         
         if(my.sprite.player.body.blocked.down && Phaser.Input.Keyboard.JustDown(cursors.up)) {
@@ -144,6 +155,11 @@ class Platformer extends Phaser.Scene {
 
         if(Phaser.Input.Keyboard.JustDown(this.rKey)) {
             this.scene.restart();
+        }
+
+        //respawns player if they "fall off" the map (get too low)
+        if (my.sprite.player.y >= 780) {
+            my.sprite.player.setPosition(30, 600);
         }
     }
 }
