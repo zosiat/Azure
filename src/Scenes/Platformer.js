@@ -9,14 +9,42 @@ class Platformer extends Phaser.Scene {
         this.DRAG = 600;    // DRAG < ACCELERATION = icy slide
         this.physics.world.gravity.y = 1500;
         this.JUMP_VELOCITY = -600;
-        this.PARTICLE_VELOCITY = 50;
+        this.PARTICLE_VELOCITY = 10;
         //come back and change scale later
         this.SCALE = 2;
         this.myScore = 0;
-        
+        this.beeDirection = 1;
+        this.beeCollision = false;
+        this.COOLDOWN_DURATION = 1000;
+        this.lastSoundTime = 0; 
     }
 
     create() {
+
+        //background music
+        this.soundtrack = this.sound.add('soundtrack', {
+            loop: true
+        });
+        this.soundtrack.play();
+
+        //this.jumpsound = this.sound.add('jumpsound');
+        this.jumpSounds = [
+            this.sound.add('jumpsound'),
+            this.sound.add('jumpsound2')
+        ];
+
+        //use for multiple emitter textures later
+        this.heartImages = [
+            this.add.image(0, 0, 'hearts'),
+            this.add.image(0, 0, 'hearts2'),
+            this.add.image(0, 0, 'hearts3')
+        ];
+
+        //creating all sounds
+        this.fallSound = this.sound.add('fallsound');
+        this.collectSound = this.sound.add('collectsound');
+        this.landSound = this.sound.add('landsound');
+        this.walkSound = this.sound.add('walksound');
 
         this.physics.world.setBounds(0, 0, 1920, 800);
 
@@ -32,6 +60,8 @@ class Platformer extends Phaser.Scene {
         // Create a layer
         this.backgroundLayer = this.map.createLayer("Background", this.tileset, 0, 0);
         this.backgroundLayer.setScale(SCALE);
+        this.cloudLayer = this.map.createLayer("Clouds", this.tileset, 0, 0);
+        this.cloudLayer.setScale(SCALE);
         this.groundLayer = this.map.createLayer("Platform and Trees", this.tileset, 0, 0);
         this.groundLayer.setScale(SCALE);
 
@@ -39,7 +69,6 @@ class Platformer extends Phaser.Scene {
         this.groundLayer.setCollisionByProperty({
             collides: true
         });
-
 
         // Find coins in the "Objects" layer in Phaser
         // Look for them by finding objects with the name "coin"
@@ -88,18 +117,32 @@ class Platformer extends Phaser.Scene {
         my.sprite.player = this.physics.add.sprite(30, 600, "bunny").setScale(SCALE);
         my.sprite.player.setCollideWorldBounds(true);
 
+        // set up bee sprite
+        my.sprite.bee = this.physics.add.sprite(1210, 200, "bee").setScale(SCALE);
+        //my.sprite.bee = this.physics.add.sprite(50, 600, "bee").setScale(SCALE);
+        my.sprite.bee.setCollideWorldBounds(true);
+        my.sprite.bee.anims.play('bee', true);
+
         //enable collision handling
         this.physics.add.collider(my.sprite.player, this.groundLayer);
+        this.physics.add.collider(my.sprite.bee, this.groundLayer);
 
         //handle collision detection with flowers
         this.physics.add.overlap(my.sprite.player, this.flowerGroup, (obj1, obj2) => {
+            this.collectSound.play();
             obj2.destroy();
         });
 
         //collision detection with ladder
         this.physics.add.overlap(my.sprite.player, this.ladderGroup, (obj1, obj2) => {
+            this.scene.restart();
             this.title.visible = true;
         }); 
+
+        //bee collision
+        this.physics.add.overlap(my.sprite.player, my.sprite.bee, (obj1, obj2) => {
+            this.beeCollision = true;
+        });
         
         // set up Phaser-provided cursor key input
         cursors = this.input.keyboard.createCursorKeys();
@@ -121,11 +164,24 @@ class Platformer extends Phaser.Scene {
             alpha: {start: 0.5, end: 0.01}, 
         });
 
-        my.vfx.walking.stop();
+        my.vfx.walking.stop(); 
+;
 
+        //heart emitter
+        my.vfx.hearts = this.add.particles(0, 0, "hearts3", {
+            lifespan: 500,                 
+            frequency: 800,                 
+            scale: { start: 1.5, end: 0.5 },
+            alpha: { start: 1, end: 0 },    
+            gravityY: 100,
+
+        });
+
+        my.vfx.hearts.stop(); 
+    
         //camera
         this.cameras.main.setBounds(0, 0, 1920, 800);
-        this.cameras.main.startFollow(my.sprite.player, true, 0.25, 0.25); // (target, [,roundPixels][,lerpX][,lerpY])
+        this.cameras.main.startFollow(my.sprite.player, true, 0.25, 0.25);
         this.cameras.main.setDeadzone(20, 20);
         this.cameras.main.setZoom(this.SCALE);
 
@@ -137,11 +193,59 @@ class Platformer extends Phaser.Scene {
     } 
 
     update() {
+        /*
+        //working on clouds scrolling but havent perfected it yet
+        this.cloudSpeed = 0.1;
 
-        if (this.scene.isPaused()) {
-            return;
+        this.cloudLayer.x += this.cloudSpeed;
+
+        // Reset the background position when it goes beyond a certain point
+        if (this.cloudLayer.x > 1920) {
+            this.cloudLayer.x = 0; // Reset to the start
+        }
+        */
+
+        //bee speed
+        //1210
+        my.sprite.bee.x += 0.2 * this.beeDirection; 
+        //bee movement check
+        if (my.sprite.bee.x <= 1160) {
+            my.sprite.bee.setFlip(false, false);
+            //changes direction when limit is reached
+            this.beeDirection = 1;
+        } else if (my.sprite.bee.x >= 1230) {
+            my.sprite.bee.setFlip(true, false);
+            this.beeDirection = -1;
         }
 
+        //bee collision: different sounds and heart emmitter
+        const currentTime = Date.now();
+
+        if (this.beeCollision && (currentTime - this.lastSoundTime > this.COOLDOWN_DURATION)) {
+            if (this.flowerGroup.getChildren().length <= 1 && this.physics.overlap(my.sprite.player, my.sprite.bee)) {
+                if (!this.positiveSoundPlayed) {
+                    this.collectSound.play();
+                    this.positiveSoundPlayed = true;
+                    my.vfx.hearts.setPosition(my.sprite.bee.x, my.sprite.bee.y - 20);
+                    my.vfx.hearts.start();
+                }
+                
+            } else if (this.flowerGroup.getChildren().length > 1 && this.physics.overlap(my.sprite.player, my.sprite.bee)){
+                if (!this.negativeSoundPlayed) {
+                    this.landSound.play();
+                    this.negativeSoundPlayed = true;  
+                }
+            }
+            //resetting flags
+            this.beeCollision = false;
+            this.lastSoundTime = currentTime;
+            this.positiveSoundPlayed = false;
+            this.negativeSoundPlayed = false;
+        }
+
+        //heart emmitter follows bee
+        my.vfx.hearts.setPosition(my.sprite.bee.x, my.sprite.bee.y - 20);
+    
         if(cursors.left.isDown) {
             this.title.visible = false;
             my.sprite.player.setAccelerationX(-this.ACCELERATION);
@@ -156,7 +260,7 @@ class Platformer extends Phaser.Scene {
             // Only play smoke effect if touching the ground
             if (my.sprite.player.body.blocked.down) {
                 my.vfx.walking.start();
-
+                //this.walkSound.play({delay: 100});
             }
 
         } else if(cursors.right.isDown) {
@@ -166,10 +270,11 @@ class Platformer extends Phaser.Scene {
             my.sprite.player.anims.play('walk', true);
             my.vfx.walking.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-40, my.sprite.player.displayHeight/2-5, false);
             my.vfx.walking.setParticleSpeed(this.PARTICLE_VELOCITY, 0);
-
+            
             // Only play smoke effect if touching the ground
             if (my.sprite.player.body.blocked.down) {
                 my.vfx.walking.start();
+                //this.walkSound.play({delay: 100});
 
             }
 
@@ -180,6 +285,7 @@ class Platformer extends Phaser.Scene {
             my.sprite.player.anims.play('idle');
             //vfx stop playing 
             my.vfx.walking.stop();
+            this.walkSound.stop();
         }
 
         // player jump
@@ -187,9 +293,13 @@ class Platformer extends Phaser.Scene {
         if(!my.sprite.player.body.blocked.down) {
             my.sprite.player.anims.play('jump');
             my.vfx.walking.stop();
+            this.walkSound.stop();
         }
         
         if(my.sprite.player.body.blocked.down && Phaser.Input.Keyboard.JustDown(cursors.up)) {
+            //play a random jump sound
+            const randomIndex = Phaser.Math.Between(0, this.jumpSounds.length - 1);
+            this.jumpSounds[randomIndex].play();
             my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
         }
 
@@ -200,7 +310,9 @@ class Platformer extends Phaser.Scene {
 
         //respawns player if they "fall off" the map (get too low)
         if (my.sprite.player.y >= 780) {
+            this.fallSound.play();
             my.sprite.player.setPosition(30, 600);
+            my.vfx.hearts.stop();
         }
     }
 }
