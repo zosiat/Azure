@@ -29,10 +29,12 @@ class Load extends Phaser.Scene {
         this.load.image("hearts", "heart.png");
         this.load.image("hearts2", "heart2.png");
         this.load.image("hearts3", "heart3.png");
+        this.load.image("start", "Start.png");
 
 
         //load audio
         this.load.audio('soundtrack', 'Pixel 2.mp3');
+        this.load.audio('titlesoundtrack', 'Pixel 3.mp3');
 
         this.load.audio('jumpsound', "DM-CGS-47.wav");
         this.load.audio('jumpsound2', "DM-CGS-46.wav");
@@ -89,7 +91,7 @@ class Load extends Phaser.Scene {
         });
 
          // ...and pass to the next Scene
-         this.scene.start("platformerScene");
+         this.scene.start("titleScene");
     }
 
     // Never get here since a new scene is started in create()

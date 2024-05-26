@@ -23,14 +23,15 @@ class Platformer extends Phaser.Scene {
 
         //background music
         this.soundtrack = this.sound.add('soundtrack', {
-            loop: true
+            loop: true,
+            volume: 0.1
         });
         this.soundtrack.play();
 
         //this.jumpsound = this.sound.add('jumpsound');
         this.jumpSounds = [
-            this.sound.add('jumpsound'),
-            this.sound.add('jumpsound2')
+            this.sound.add('jumpsound', {volume: 0.2}),
+            this.sound.add('jumpsound2', {volume: 0.2})
         ];
 
         //use for multiple emitter textures later
@@ -41,10 +42,10 @@ class Platformer extends Phaser.Scene {
         ];
 
         //creating all sounds
-        this.fallSound = this.sound.add('fallsound');
-        this.collectSound = this.sound.add('collectsound');
-        this.landSound = this.sound.add('landsound');
-        this.walkSound = this.sound.add('walksound');
+        this.fallSound = this.sound.add('fallsound', {volume: 0.5});
+        this.collectSound = this.sound.add('collectsound', {volume: 0.5});
+        this.landSound = this.sound.add('landsound', {volume: 0.5});
+        this.walkSound = this.sound.add('walksound', {volume: 0.5});
 
         this.physics.world.setBounds(0, 0, 1920, 800);
 
@@ -135,8 +136,9 @@ class Platformer extends Phaser.Scene {
 
         //collision detection with ladder
         this.physics.add.overlap(my.sprite.player, this.ladderGroup, (obj1, obj2) => {
-            this.scene.restart();
-            this.title.visible = true;
+            //this.scene.restart();
+            this.scene.start("titleScene");
+            this.soundtrack.stop();
         }); 
 
         //bee collision
@@ -184,11 +186,6 @@ class Platformer extends Phaser.Scene {
         this.cameras.main.startFollow(my.sprite.player, true, 0.25, 0.25);
         this.cameras.main.setDeadzone(20, 20);
         this.cameras.main.setZoom(this.SCALE);
-
-        // Create the title image
-        this.title = this.add.image(450, 600, 'title');
-        this.title.setScale(SCALE); 
-        this.title.visible = false;
     
     } 
 
@@ -247,7 +244,6 @@ class Platformer extends Phaser.Scene {
         my.vfx.hearts.setPosition(my.sprite.bee.x, my.sprite.bee.y - 20);
     
         if(cursors.left.isDown) {
-            this.title.visible = false;
             my.sprite.player.setAccelerationX(-this.ACCELERATION);
             my.sprite.player.setFlip(true, false);
             my.sprite.player.anims.play('walk', true);
@@ -264,7 +260,6 @@ class Platformer extends Phaser.Scene {
             }
 
         } else if(cursors.right.isDown) {
-            this.title.visible = false;
             my.sprite.player.setAccelerationX(this.ACCELERATION);
             my.sprite.player.resetFlip();
             my.sprite.player.anims.play('walk', true);
@@ -305,6 +300,7 @@ class Platformer extends Phaser.Scene {
 
         //reset key
         if(Phaser.Input.Keyboard.JustDown(this.rKey)) {
+            this.soundtrack.stop();
             this.scene.restart();
         }
 
