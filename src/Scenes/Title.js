@@ -24,12 +24,13 @@ class Title extends Phaser.Scene {
         //music
         this.titlesoundtrack = this.sound.add('titlesoundtrack', {
             loop: true, 
-            volume: 0
+            volume: 0.15
         });
 
         this.titlesoundtrack.play();
 
         //music fades in (so when scenes change it doesnt feel choppy)
+        /*
         this.time.delayedCall(500, () => {
             this.tweens.add({
                 targets: this.titlesoundtrack,
@@ -38,6 +39,7 @@ class Title extends Phaser.Scene {
                 ease: 'Linear'
             });
         });
+        */
         
 
         this.map = this.add.tilemap("Azure Title", 16, 16, 60, 25);
