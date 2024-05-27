@@ -24,9 +24,18 @@ class Platformer extends Phaser.Scene {
         //background music
         this.soundtrack = this.sound.add('soundtrack', {
             loop: true,
-            volume: 0.1
+            volume: 0.0
         });
         this.soundtrack.play();
+
+        this.time.delayedCall(500, () => {
+            this.tweens.add({
+                targets: this.soundtrack,
+                volume: 0.1,
+                duration: 3000,
+                ease: 'Linear'
+            });
+        });
 
         //this.jumpsound = this.sound.add('jumpsound');
         this.jumpSounds = [
@@ -150,9 +159,15 @@ class Platformer extends Phaser.Scene {
         cursors = this.input.keyboard.createCursorKeys();
 
         this.rKey = this.input.keyboard.addKey('R');
+        this.wKey = this.input.keyboard.addKey('W');
+        this.aKey = this.input.keyboard.addKey('A');
+        this.dKey = this.input.keyboard.addKey('D');
+
+
+        this.physics.world.drawDebug = false;
 
         // debug key listener (assigned to D key)
-        this.input.keyboard.on('keydown-D', () => {
+        this.input.keyboard.on('keydown-B', () => {
             this.physics.world.drawDebug = this.physics.world.drawDebug ? false : true
             this.physics.world.debugGraphic.clear()
         }, this);
@@ -167,7 +182,6 @@ class Platformer extends Phaser.Scene {
         });
 
         my.vfx.walking.stop(); 
-;
 
         //heart emitter
         my.vfx.hearts = this.add.particles(0, 0, "hearts3", {
@@ -190,17 +204,6 @@ class Platformer extends Phaser.Scene {
     } 
 
     update() {
-        /*
-        //working on clouds scrolling but havent perfected it yet
-        this.cloudSpeed = 0.1;
-
-        this.cloudLayer.x += this.cloudSpeed;
-
-        // Reset the background position when it goes beyond a certain point
-        if (this.cloudLayer.x > 1920) {
-            this.cloudLayer.x = 0; // Reset to the start
-        }
-        */
 
         //bee speed
         //1210
@@ -243,7 +246,7 @@ class Platformer extends Phaser.Scene {
         //heart emmitter follows bee
         my.vfx.hearts.setPosition(my.sprite.bee.x, my.sprite.bee.y - 20);
     
-        if(cursors.left.isDown) {
+        if(cursors.left.isDown || this.aKey.isDown) {
             my.sprite.player.setAccelerationX(-this.ACCELERATION);
             my.sprite.player.setFlip(true, false);
             my.sprite.player.anims.play('walk', true);
@@ -259,7 +262,7 @@ class Platformer extends Phaser.Scene {
                 //this.walkSound.play({delay: 100});
             }
 
-        } else if(cursors.right.isDown) {
+        } else if(cursors.right.isDown|| this.dKey.isDown) {
             my.sprite.player.setAccelerationX(this.ACCELERATION);
             my.sprite.player.resetFlip();
             my.sprite.player.anims.play('walk', true);
@@ -291,7 +294,7 @@ class Platformer extends Phaser.Scene {
             this.walkSound.stop();
         }
         
-        if(my.sprite.player.body.blocked.down && Phaser.Input.Keyboard.JustDown(cursors.up)) {
+        if(my.sprite.player.body.blocked.down && (Phaser.Input.Keyboard.JustDown(cursors.up) || Phaser.Input.Keyboard.JustDown(this.wKey))) {
             //play a random jump sound
             const randomIndex = Phaser.Math.Between(0, this.jumpSounds.length - 1);
             this.jumpSounds[randomIndex].play();

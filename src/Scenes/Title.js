@@ -4,15 +4,41 @@ class Title extends Phaser.Scene {
 
     }
 
+    //creating images for scrolling background
+    createAligned(scene, count, texture, scrollFactor) {
+        const w = scene.textures.get(texture).getSourceImage().width;
+        const totalWidth = scene.scale.width * 10;
+        count = Math.ceil(totalWidth / w) * scrollFactor;
+        
+        let x = 0;
+        for (let i = 0; i < count; ++i) {
+            const m = scene.add.image(x, scene.scale.height / 2, texture)
+                .setOrigin(0, 0.5)
+                .setScrollFactor(scrollFactor);
+            x += m.width;
+        }
+    }
+
     create(){
 
         //music
         this.titlesoundtrack = this.sound.add('titlesoundtrack', {
             loop: true, 
-            volume: 0.1
+            volume: 0
         });
 
         this.titlesoundtrack.play();
+
+        //music fades in (so when scenes change it doesnt feel choppy)
+        this.time.delayedCall(500, () => {
+            this.tweens.add({
+                targets: this.titlesoundtrack,
+                volume: 0.2,
+                duration: 3000,
+                ease: 'Linear'
+            });
+        });
+        
 
         this.map = this.add.tilemap("Azure Title", 16, 16, 60, 25);
 
@@ -22,36 +48,49 @@ class Title extends Phaser.Scene {
         this.backgroundLayer = this.map.createLayer("Background", this.tileset, 960, 0);
         this.backgroundLayer.setScale(3);
         this.groundLayer = this.map.createLayer("Platform and Trees", this.tileset, 960, 0);
-        this.groundLayer.setScale(3);
-
-        // Make it collidable
-        this.groundLayer.setCollisionByProperty({
-            collides: true
-        });
+        this.groundLayer.setScale(2);
 
         this.sKey = this.input.keyboard.addKey('S');
 
-        this.title = this.add.image(1900, 400, 'title');
-        this.title.setScale(4); 
+        this.createAligned(this, 5, 'map', 1)
+        
+        this.title = this.add.image(0, 0, 'title');
+        this.title.setOrigin(0.5, 0.5);
 
-        this.startText = this.add.image(1900, 600, 'start');
+        this.startText = this.add.image(0, 0, 'start');
+        this.startText.setScale(0.2);
+        this.startText.setOrigin(0.5, 0.5);
 
-        this.cameras.main.setBounds(960, 0, 1920, 800);
-        //this.cameras.main.setZoom();
+        this.cameras.main.setBounds(0, 0, this.map.widthInPixels * 3, this.map.heightInPixels * 3);
+        this.cameras.main.setZoom(4);
 
     }
 
     update(){
 
-        this.groundSpeed = 0.5;
-        this.backgroundLayer.tilePositionX += this.groundSpeed;
-        this.groundLayer.tilePositionX += this.groundSpeed;
+        this.cameras.main.scrollX += 0.5;
+
+        //looping camera movement
+        if (this.cameras.main.scrollX >= this.map.widthInPixels * 3 - this.cameras.main.width) {
+            this.cameras.main.scrollX = 0; 
+        }
 
         if (this.sKey.isDown){
             this.scene.start("platformerScene");
             this.titlesoundtrack.stop();
         }
 
+        this.updateTextPosition();
+
+    }
+
+    updateTextPosition() {
+        //keeping text centered with the camera
+        this.title.x = this.cameras.main.scrollX + this.cameras.main.width / 2;
+        this.title.y = this.cameras.main.scrollY + this.cameras.main.height / 2;
+
+        this.startText.x = this.cameras.main.scrollX + this.cameras.main.width / 2;
+        this.startText.y = this.cameras.main.scrollY + this.cameras.main.height / 2 + 40;
     }
 
 }
