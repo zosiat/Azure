@@ -4,15 +4,27 @@ class Load extends Phaser.Scene {
     }
 
     preload() {
+
+        // https://github.com/jonit-dev/phaser-animated-tiles
+        this.load.scenePlugin('AnimatedTiles', './lib/AnimatedTiles.js', 'animatedTiles', 'animatedTiles')
+
         this.load.setPath("./assets/");
 
         // Load tilemap information
         this.load.image("tilemap tiles", "tilemap_packed.png");         // Packed tilemap
+        this.load.image("dark tilemap tiles", "monochrome_tilemap_packed.png");         // Packed tilemap
+
         this.load.tilemapTiledJSON("Azure Level", "Azure Level.tmj");   // Tilemap in JSON
         this.load.tilemapTiledJSON("Azure Title", "Azure Title.tmj");   // Title Tilemap in JSON
+        this.load.tilemapTiledJSON("Azure Level Dark", "Azure Level Dark.tmj");   // Dark Level in JSON
 
         // Load the tilemap as a spritesheet
         this.load.spritesheet("tilemap sheet", "tilemap_packed.png", {
+            frameWidth: 16,
+            frameHeight: 16
+        });
+
+        this.load.spritesheet("dark tilemap sheet", "monochrome_tilemap_packed.png", {
             frameWidth: 16,
             frameHeight: 16
         });
@@ -32,11 +44,15 @@ class Load extends Phaser.Scene {
         this.load.image("hearts3", "heart3.png");
         this.load.image("start", "Start.png");
         this.load.image("map", "map.png");
-
+        this.load.image("door", "tile_0057.png")
+        this.load.image("spike", "tile_0183.png")
+        this.load.image("spike down", "tile_0203.png")
+        this.load.image("key", "tile_0097.png")
 
         //load audio
         this.load.audio('soundtrack', 'Pixel 2.mp3');
         this.load.audio('titlesoundtrack', 'Pixel 3.mp3');
+        this.load.audio('darksoundtrack', 'Pixel 5.mp3');
 
         this.load.audio('jumpsound', "DM-CGS-47.wav");
         this.load.audio('jumpsound2', "DM-CGS-46.wav");
@@ -89,6 +105,16 @@ class Load extends Phaser.Scene {
                 { key: 'bee flap' }
             ],
             frameRate: 5,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'spikeAnimation',
+            frames: [
+                { key: 'spike' },
+                { key: 'spike down' }
+            ],
+            frameRate: 1.5,
             repeat: -1
         });
 

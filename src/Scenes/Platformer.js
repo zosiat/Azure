@@ -54,7 +54,7 @@ class Platformer extends Phaser.Scene {
         this.fallSound = this.sound.add('fallsound', {volume: 0.5});
         this.collectSound = this.sound.add('collectsound', {volume: 0.5});
         this.landSound = this.sound.add('landsound', {volume: 0.5});
-        this.walkSound = this.sound.add('walksound', {volume: 0.5});
+        //this.walkSound = this.sound.add('walksound', {volume: 0.5});
 
         this.physics.world.setBounds(0, 0, 1920, 800);
 
@@ -146,7 +146,7 @@ class Platformer extends Phaser.Scene {
         //collision detection with ladder
         this.physics.add.overlap(my.sprite.player, this.ladderGroup, (obj1, obj2) => {
             //this.scene.restart();
-            this.scene.start("titleScene");
+            this.scene.start("darkPlatformerScene");
             this.soundtrack.stop();
         }); 
 
@@ -283,7 +283,7 @@ class Platformer extends Phaser.Scene {
             my.sprite.player.anims.play('idle');
             //vfx stop playing 
             my.vfx.walking.stop();
-            this.walkSound.stop();
+            //this.walkSound.stop();
         }
 
         // player jump
@@ -291,7 +291,7 @@ class Platformer extends Phaser.Scene {
         if(!my.sprite.player.body.blocked.down) {
             my.sprite.player.anims.play('jump');
             my.vfx.walking.stop();
-            this.walkSound.stop();
+            //this.walkSound.stop();
         }
         
         if(my.sprite.player.body.blocked.down && (Phaser.Input.Keyboard.JustDown(cursors.up) || Phaser.Input.Keyboard.JustDown(this.wKey))) {

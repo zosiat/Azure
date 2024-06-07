@@ -70,7 +70,7 @@ class Title extends Phaser.Scene {
 
     update(){
 
-        this.cameras.main.scrollX += 0.5;
+        this.cameras.main.scrollX += 0.2;
 
         //looping camera movement
         if (this.cameras.main.scrollX >= this.map.widthInPixels * 3 - this.cameras.main.width) {
