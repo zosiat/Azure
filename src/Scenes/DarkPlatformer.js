@@ -46,6 +46,7 @@ class DarkPlatformer extends Phaser.Scene {
 
         this.fallSound = this.sound.add('fallsound', {volume: 0.5});
         this.collectSound = this.sound.add('collectsound', {volume: 0.5});
+        this.lockedSound = this.sound.add('walksound', {volume: 0.5});
 
         this.physics.world.setBounds(0, 0, 1920, 800);
 
@@ -149,6 +150,7 @@ class DarkPlatformer extends Phaser.Scene {
             //this.scene.restart();
             this.fallSound.play();
             my.sprite.player.setPosition(30, 600);
+            this.myScore++;
         }); 
 
         //collecting the key
@@ -158,6 +160,8 @@ class DarkPlatformer extends Phaser.Scene {
             obj2.destroy();
         }); 
 
+        //score text
+        this.scoreText = this.add.bitmapText(100, 100, 'Monster Friend Fore', `Deaths: ${this.myScore}`, 20);
 
         // set up Phaser-provided cursor key input
         cursors = this.input.keyboard.createCursorKeys();
@@ -186,14 +190,23 @@ class DarkPlatformer extends Phaser.Scene {
     update(){
 
         if (this.keyGroup.getChildren().length == 0 && this.physics.overlap(my.sprite.player, this.doorGroup)) {
-            this.scene.start("titleScene");
+            this.scene.start("creditsScene");
             this.darksoundtrack.stop();
 
         } 
-        else{
-            //play other sound
-        }
+        else if (this.physics.overlap(my.sprite.player, this.doorGroup)) {
+            const delay = 500; 
+            
+            // Check if the sound is already scheduled to avoid repeated scheduling
+            if (!this.lockedSoundPlaying) {
+                this.lockedSoundPlaying = true;
 
+                this.time.delayedCall(delay, () => {
+                    this.lockedSound.play();
+                    this.lockedSoundPlaying = false; //reset flag
+                }, [], this);
+            }
+        }
         //resetting flag
         this.doorCollision = false;
 
@@ -257,8 +270,19 @@ class DarkPlatformer extends Phaser.Scene {
 
         if (my.sprite.player.y >= 780) {
             this.fallSound.play();
+            this.myScore++;
             my.sprite.player.setPosition(30, 600);
             
         }
+        this.updateTextPosition()
+    }
+
+    //text stays with the camera
+    updateTextPosition() {
+        //keeping text centered with the camera
+        this.scoreText.x = this.cameras.main.scrollX + this.cameras.main.width/2 + 300;
+        this.scoreText.y = this.cameras.main.scrollY + this.cameras.main.height/2 -170;
+
+        this.scoreText.setText(`Deaths: ${this.myScore}`);
     }
 }

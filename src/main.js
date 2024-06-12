@@ -31,7 +31,7 @@ let config = {
     },
     width: 1920,
     height: 800,
-    scene: [Load, Platformer, Title, DarkPlatformer]
+    scene: [Load, Platformer, Title, DarkPlatformer, Credits]
 }
 
 var cursors;

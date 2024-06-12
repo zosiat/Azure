@@ -59,8 +59,7 @@ class Title extends Phaser.Scene {
         this.title = this.add.image(0, 0, 'title');
         this.title.setOrigin(0.5, 0.5);
 
-        this.startText = this.add.image(0, 0, 'start');
-        this.startText.setScale(0.2);
+        this.startText = this.add.bitmapText(0, 0, 'Dogica', `Press S to Start`, 10);
         this.startText.setOrigin(0.5, 0.5);
 
         this.cameras.main.setBounds(0, 0, this.map.widthInPixels * 3, this.map.heightInPixels * 3);
@@ -78,7 +77,7 @@ class Title extends Phaser.Scene {
         }
 
         if (this.sKey.isDown){
-            this.scene.start("platformerScene");
+            this.scene.start("creditsScene");
             this.titlesoundtrack.stop();
         }
 

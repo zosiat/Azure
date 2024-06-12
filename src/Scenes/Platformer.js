@@ -1,3 +1,4 @@
+
 class Platformer extends Phaser.Scene {
     constructor() {
         super("platformerScene");
@@ -80,12 +81,6 @@ class Platformer extends Phaser.Scene {
             collides: true
         });
 
-        // Find coins in the "Objects" layer in Phaser
-        // Look for them by finding objects with the name "coin"
-        // Assign the coin texture from the tilemap_sheet sprite sheet
-        // Phaser docs:
-        // https://newdocs.phaser.io/docs/3.80.0/focus/Phaser.Tilemaps.Tilemap-createFromObjects
-
         this.flowers = this.map.createFromObjects("Objects", {
             name: "flower",
             key: "flower"
@@ -145,7 +140,6 @@ class Platformer extends Phaser.Scene {
 
         //collision detection with ladder
         this.physics.add.overlap(my.sprite.player, this.ladderGroup, (obj1, obj2) => {
-            //this.scene.restart();
             this.scene.start("darkPlatformerScene");
             this.soundtrack.stop();
         }); 
@@ -154,6 +148,9 @@ class Platformer extends Phaser.Scene {
         this.physics.add.overlap(my.sprite.player, my.sprite.bee, (obj1, obj2) => {
             this.beeCollision = true;
         });
+
+        //score text
+        this.scoreText = this.add.bitmapText(100, 100, 'Monster Friend Fore', `Deaths: ${this.myScore}`, 20);
         
         // set up Phaser-provided cursor key input
         cursors = this.input.keyboard.createCursorKeys();
@@ -259,7 +256,6 @@ class Platformer extends Phaser.Scene {
             // Only play smoke effect if touching the ground
             if (my.sprite.player.body.blocked.down) {
                 my.vfx.walking.start();
-                //this.walkSound.play({delay: 100});
             }
 
         } else if(cursors.right.isDown|| this.dKey.isDown) {
@@ -272,7 +268,6 @@ class Platformer extends Phaser.Scene {
             // Only play smoke effect if touching the ground
             if (my.sprite.player.body.blocked.down) {
                 my.vfx.walking.start();
-                //this.walkSound.play({delay: 100});
 
             }
 
@@ -281,9 +276,7 @@ class Platformer extends Phaser.Scene {
             my.sprite.player.setAccelerationX(0);
             my.sprite.player.setDragX(this.DRAG);
             my.sprite.player.anims.play('idle');
-            //vfx stop playing 
             my.vfx.walking.stop();
-            //this.walkSound.stop();
         }
 
         // player jump
@@ -291,7 +284,6 @@ class Platformer extends Phaser.Scene {
         if(!my.sprite.player.body.blocked.down) {
             my.sprite.player.anims.play('jump');
             my.vfx.walking.stop();
-            //this.walkSound.stop();
         }
         
         if(my.sprite.player.body.blocked.down && (Phaser.Input.Keyboard.JustDown(cursors.up) || Phaser.Input.Keyboard.JustDown(this.wKey))) {
@@ -310,8 +302,19 @@ class Platformer extends Phaser.Scene {
         //respawns player if they "fall off" the map (get too low)
         if (my.sprite.player.y >= 780) {
             this.fallSound.play();
+            this.myScore++;
             my.sprite.player.setPosition(30, 600);
             my.vfx.hearts.stop();
         }
+        //moving text position
+        this.updateTextPosition()
+    }
+
+    updateTextPosition() {
+        //keeping text centered with the camera
+        this.scoreText.x = this.cameras.main.scrollX + this.cameras.main.width/2 + 300;
+        this.scoreText.y = this.cameras.main.scrollY + this.cameras.main.height/2 -170;
+
+        this.scoreText.setText(`Deaths: ${this.myScore}`);
     }
 }

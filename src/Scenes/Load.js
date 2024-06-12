@@ -28,6 +28,9 @@ class Load extends Phaser.Scene {
             frameWidth: 16,
             frameHeight: 16
         });
+
+        this.load.bitmapFont('Monster Friend Fore', 'Monster Friend Fore.png', 'Monster Friend Fore.xml');
+        this.load.bitmapFont('Dogica', 'Dogica.png', 'Dogica.xml');
         
         //loading images
         this.load.image("bunny", "tile_0045.png");
@@ -61,14 +64,6 @@ class Load extends Phaser.Scene {
         this.load.audio('landsound', "DM-CGS-20.wav");
         this.load.audio('walksound', "DM-CGS-40.wav");
 
-
-        // Oooh, fancy. A multi atlas is a texture atlas which has the textures spread
-        // across multiple png files, so as to keep their size small for use with
-        // lower resource devices (like mobile phones).
-        // kenny-particles.json internally has a list of the png files
-        // The multiatlas was created using TexturePacker and the Kenny
-        // Particle Pack asset pack.
-        //this.load.multiatlas("kenny-particles", "kenny-particles.json");
     }
 
     create() {
