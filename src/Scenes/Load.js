@@ -31,7 +31,9 @@ class Load extends Phaser.Scene {
 
         this.load.bitmapFont('Monster Friend Fore', 'Monster Friend Fore.png', 'Monster Friend Fore.xml');
         this.load.bitmapFont('Dogica', 'Dogica.png', 'Dogica.xml');
-        
+        //just a blue version of monster friend fore
+        this.load.bitmapFont('Blue', 'Blue.png', 'Blue.xml');
+
         //loading images
         this.load.image("bunny", "tile_0045.png");
         this.load.image("bunny jump", "tile_0046.png");

@@ -59,6 +59,9 @@ class Title extends Phaser.Scene {
         this.title = this.add.image(0, 0, 'title');
         this.title.setOrigin(0.5, 0.5);
 
+        this.title = this.add.bitmapText(0, 0, 'Blue', `AZURE`, 40);
+        this.title.setOrigin(0.5, 0.5);
+
         this.startText = this.add.bitmapText(0, 0, 'Dogica', `Press S to Start`, 10);
         this.startText.setOrigin(0.5, 0.5);
 
@@ -77,7 +80,7 @@ class Title extends Phaser.Scene {
         }
 
         if (this.sKey.isDown){
-            this.scene.start("creditsScene");
+            this.scene.start("platformerScene");
             this.titlesoundtrack.stop();
         }
 

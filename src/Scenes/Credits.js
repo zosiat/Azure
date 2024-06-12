@@ -21,6 +21,22 @@ class Credits extends Phaser.Scene {
 
     create(){
 
+        //background music
+        this.soundtrack = this.sound.add('soundtrack', {
+            loop: true,
+            volume: 0.0
+        });
+        this.soundtrack.play();
+
+        this.time.delayedCall(500, () => {
+            this.tweens.add({
+                targets: this.soundtrack,
+                volume: 0.1,
+                duration: 3000,
+                ease: 'Linear'
+            });
+        });
+
         this.map = this.add.tilemap("Azure Title", 16, 16, 60, 25);
 
         this.tileset = this.map.addTilesetImage("tilemap_packed", "tilemap tiles");
@@ -36,7 +52,7 @@ class Credits extends Phaser.Scene {
         this.createAligned(this, 5, 'map', 1)
         
         //credits text
-        this.creditsText = this.add.bitmapText(0, 0, 'Monster Friend Fore', `CREDITS`, 20);
+        this.creditsText = this.add.bitmapText(0, 0, 'Blue', `CREDITS`, 20);
         this.creditsText.setOrigin(0.5, 0.5);
 
         console.log('Tint applied:', this.creditsText.tintTopLeft.toString(16)); // Debugging
@@ -50,7 +66,7 @@ class Credits extends Phaser.Scene {
         this.creditsMusic = this.add.bitmapText(0, 0, 'Monster Friend Fore','Audio', 12);
         this.creditsMusic.setOrigin(0.5, 0.5);
         
-        this.musicText = this.add.bitmapText(0, 0, 'Dogica','AlkaKrab and ...', 6);
+        this.musicText = this.add.bitmapText(0, 0, 'Dogica','AlkaKrab and Dustyroom', 6);
         this.musicText.setOrigin(0.5, 0.5);
 
         this.creditsArt = this.add.bitmapText(0, 0, 'Monster Friend Fore','Art', 12);
@@ -65,6 +81,9 @@ class Credits extends Phaser.Scene {
         this.fontText = this.add.bitmapText(0, 0, 'Dogica','Roberto Mocci and Monster Friend', 6);
         this.fontText.setOrigin(0.5, 0.5);
         
+        this.prompt = this.add.bitmapText(0, 0, 'Dogica','Press T to Return to Title', 6);
+        this.prompt.setOrigin(0.5, 0.5);
+
         //camera
         this.cameras.main.setBounds(0, 0, this.map.widthInPixels * 3, this.map.heightInPixels * 3);
         this.cameras.main.setZoom(4);
@@ -82,7 +101,7 @@ class Credits extends Phaser.Scene {
 
         if (this.tKey.isDown){
             this.scene.start("titleScene");
-            //this.titlesoundtrack.stop();
+            this.soundtrack.stop();
         }
 
         this.updateTextPosition();
@@ -117,7 +136,9 @@ class Credits extends Phaser.Scene {
 
         this.fontText.x = this.cameras.main.scrollX + this.cameras.main.width / 2;
         this.fontText.y = this.cameras.main.scrollY + this.cameras.main.height / 2 + 75;
-        
+
+        this.prompt.x = this.cameras.main.scrollX + this.cameras.main.width / 2;
+        this.prompt.y = this.cameras.main.scrollY + this.cameras.main.height / 2 - 90;
     }
     
 
